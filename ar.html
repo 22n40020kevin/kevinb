@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>VR/AR Candi Dieng - WebXR</title>
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <style>
+    body { margin:0; }
+  </style>
+</head>
+<body>
+
+<!-- Tambahkan xr-mode-ui agar otomatis ada tombol AR/VR -->
+<a-scene xr-mode-ui="XRMode: xr;">
+  
+  <!-- KAMERA + CURSOR -->
+  <a-entity camera look-controls>
+    <a-cursor rayOrigin="mouse" fuse="false" raycaster="objects: .clickable"></a-cursor>
+  </a-entity>
+
+  <!-- SKY hanya untuk VR, invisible saat AR -->
+  <a-sky id="sky" color="#87CEEB"></a-sky>
+
+  <!-- TANAH (hanya untuk VR, invisible di AR) -->
+  <a-plane id="tanah" rotation="-90 0 0" width="40" height="40" color="#C2B280"></a-plane>
+
+  <!-- MODEL CANDI DIENG -->
+  <a-box position="0 1 -5" width="4" height="2" depth="4" color="#5A4632" roughness="1"></a-box>
+  <a-box position="0 2.2 -5" width="3" height="1" depth="3" color="#6F4F2A"></a-box>
+  <a-cone position="0 3.3 -5" radius-bottom="1.5" radius-top="0.1" height="1.5" color="#4A3A28"></a-cone>
+
+  <!-- ROBOT -->
+  <a-entity id="robot" class="clickable" position="-2 0.5 -3" scale="1.2 1.2 1.2">
+    <!-- BADAN -->
+    <a-box position="0 1 0" depth="0.6" height="1.1" width="0.8" color="#00FFFF" emissive="#00FFFF"></a-box>
+    <!-- KEPALA -->
+    <a-sphere radius="0.4" position="0 1.8 0" color="#FFFF55"></a-sphere>
+    <!-- MATA -->
+    <a-sphere position="-0.15 1.9 0.3" radius="0.08" color="#00FFFF"></a-sphere>
+    <a-sphere position="0.15 1.9 0.3" radius="0.08" color="#00FFFF"></a-sphere>
+    <!-- KAKI -->
+    <a-cylinder id="robot_leg" height="0.7" radius="0.12" position="0 0.3 0" color="#0090FF"></a-cylinder>
+  </a-entity>
+
+  <!-- TEKS ROBOT -->
+  <a-text id="robot_text"
+    value="" 
+    position="-2 2 -3"
+    color="#FFFFFF"
+    align="center"
+    width="4">
+  </a-text>
+
+  <!-- PEMANDU VIRTUAL -->
+  <a-entity id="guide" position="2 0.5 -3">
+    <a-sphere radius="0.4" position="0 1.8 0" color="#FFD700"></a-sphere>
+    <a-box position="0 1 0" width="0.8" height="1" depth="0.5" color="#FF7F50"></a-box>
+    <a-text id="guide_text"
+      value="Selamat datang di Candi Dieng!"
+      position="-1.5 2.5 0.2"
+      width="4"
+      color="#FFF">
+    </a-text>
+  </a-entity>
+
+</a-scene>
+
+<script>
+  // INTERAKSI ROBOT
+  const robot = document.querySelector("#robot");
+  const robotText = document.querySelector("#robot_text");
+  const robotLeg = document.querySelector("#robot_leg");
+
+  robot.addEventListener("click", () => {
+    // TAMPILKAN TEKS
+    robotText.setAttribute("value", "Hello Dieng!");
+    // ANIMASI GERAK KAKI
+    robotLeg.setAttribute("animation__kick", {
+      property: "rotation",
+      from: "0 0 0",
+      to: "0 0 -40",
+      dur: 300,
+      dir: "alternate"
+    });
+    // HILANGKAN TEKS 3 DETIK
+    setTimeout(() => {
+      robotText.setAttribute("value", "");
+    }, 3000);
+  });
+
+  // PEMANDU VIRTUAL BERBICARA OTOMATIS
+  const guideSpeech = [
+    "Selamat datang di Candi Dieng!",
+    "Dieng berada di dataran tinggi, penuh sejarah.",
+    "Candi-candi ini merupakan peninggalan Hindu abad ke-7.",
+    "Ayo jelajahi area sekitar!"
+  ];
+  let index = 0;
+  setInterval(() => {
+    document.querySelector("#guide_text")
+      .setAttribute("value", guideSpeech[index]);
+    index = (index + 1) % guideSpeech.length;
+  }, 6000);
+
+  // SEMBUNYIKAN SKY DAN TANAH JIKA MASUK AR MODE
+  // (agar kamera HP langsung terlihat di belakang objek)
+  document.querySelector("a-scene").addEventListener('enter-vr', function () {
+    if (this.is('ar-mode')) {
+      document.querySelector("#sky").setAttribute('visible', false);
+      document.querySelector("#tanah").setAttribute('visible', false);
+    } else {
+      document.querySelector("#sky").setAttribute('visible', true);
+      document.querySelector("#tanah").setAttribute('visible', true);
+    }
+  });
+</script>
+
+</body>
+</html>
